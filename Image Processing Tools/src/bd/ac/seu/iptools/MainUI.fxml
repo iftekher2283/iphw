@@ -11,6 +11,7 @@
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
 <AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bd.ac.seu.iptools.MainUIController">
    <children>
@@ -31,6 +32,8 @@
                       <MenuItem mnemonicParsing="false" onAction="#handleRGBtoGrayscaleAction" text="RGB to Grayscale" />
                         <MenuItem mnemonicParsing="false" onAction="#handleRotateClockwiseAction" text="Rotate Clockwise" />
                         <MenuItem mnemonicParsing="false" onAction="#handleAddImageAction" text="Add Images" />
+                        <MenuItem mnemonicParsing="false" onAction="#getColorHistogramAction" text="Get Color Histogram" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleCalculateThresholdAction" text="Calculate Threshold" />
                     </items>
                   </Menu>
                 <Menu mnemonicParsing="false" text="Help">
@@ -45,6 +48,7 @@
                 <Button mnemonicParsing="false" onAction="#handleFileOpenAction" text="Open" />
                   <Button mnemonicParsing="false" onAction="#handleFileSaveAction" text="Save" />
                   <Button mnemonicParsing="false" onAction="#handleOpenSecondaryImageAction" text="Open2" />
+                  <Text fx:id="thresholdText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="104.7294921875" />
               </items>
             </ToolBar>
             <SplitPane dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">

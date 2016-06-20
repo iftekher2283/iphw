@@ -9,6 +9,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javax.imageio.ImageIO;
 
@@ -38,6 +41,8 @@ public class MainUIController implements Initializable {
     private BufferedImage inputImage;
     private BufferedImage inputImage2;
     private BufferedImage outputImage;
+    @FXML
+    private Text thresholdText;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -80,10 +85,9 @@ public class MainUIController implements Initializable {
             Logger.getLogger(MainUIController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    @FXML
-    private void handleRGBtoGrayscaleAction(ActionEvent event) {
-        outputImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), inputImage.getType());
+    
+    public BufferedImage turnToGrayScale(BufferedImage inputImage){
+        BufferedImage outputImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), inputImage.getType());
         for (int c = 0; c < inputImage.getWidth(); c++) {
             for (int r = 0; r < inputImage.getHeight(); r++) {
                 int rgb = inputImage.getRGB(c, r);
@@ -97,6 +101,12 @@ public class MainUIController implements Initializable {
                 outputImage.setRGB(c, r, rgb);
             }
         }
+        return outputImage;
+    }
+    @FXML
+    private void handleRGBtoGrayscaleAction(ActionEvent event) {
+      //  outputImage = new BufferedImage(inputImage.getWidth(), inputImage.getHeight(), inputImage.getType());
+        outputImage = turnToGrayScale(inputImage);
         displayImage(outputImage, rightPane);
     }
 
@@ -313,5 +323,67 @@ public class MainUIController implements Initializable {
         } catch (IOException ex) {
             Logger.getLogger(MainUIController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @FXML
+    private void handleCalculateThresholdAction(ActionEvent event) {
+        int threshold = 127;
+        List<Integer> rgbfr = new ArrayList<>();
+        List<Integer> rgbmv = new ArrayList<>();
+        List<Integer> rgbcs = new ArrayList<>();
+        List<Integer> rgbcfr = new ArrayList<>();
+        for(int i = 0; i < 256; i++){
+            rgbfr.add(0);
+            rgbmv.add(0);
+            rgbcs.add(0);
+            rgbcfr.add(0);
+            
+        }
+        
+        outputImage = turnToGrayScale(inputImage);
+      //  outputImage = inputImage;
+        for(int c = 0; c < outputImage.getWidth(); c++){
+            for(int r = 0; r < outputImage.getHeight(); r++){
+                int rgb = outputImage.getRGB(c, r);
+                int rr = (rgb >> 16) & 0xFF;
+                int gg = (rgb >> 8) & 0xFF;
+                int bb = (rgb >> 0) & 0xFF;
+              //  rgbfr.set(rr, (rgbfr.get(rgbfr.indexOf(rr)) + 1));
+                rgbfr.set(bb, (rgbfr.get(bb) + 1));
+            }
+        }
+        rgbcfr.set(0, rgbfr.get(0));
+        System.out.printf("ind: 0; fr: %d; cfr: %d; mv: %d; cmv: %d\n", rgbfr.get(0), rgbcfr.get(0), rgbmv.get(0), rgbcs.get(0));
+        for(int j = 1; j < 256; j++){
+            rgbmv.set(j, (j * rgbfr.get(j)));
+            rgbcs.set(j, (rgbmv.get(j) + rgbcs.get(j - 1)));
+            rgbcfr.set(j, (rgbfr.get(j) + rgbcfr.get(j - 1)));
+            System.out.printf("ind: %d; fr: %d; cfr: %d; mv: %d; cmv: %d\n", j, rgbfr.get(j), rgbcfr.get(j), rgbmv.get(j), rgbcs.get(j));
+        }
+        int m1 = rgbcs.get(threshold) / rgbcfr.get(threshold);
+        int m2 = (rgbcs.get(255) - rgbcs.get(threshold)) / (rgbcfr.get(255) - rgbcfr.get(threshold));
+        threshold = (m1 + m2) / 2;
+        thresholdText.setText("Threshold: " + threshold);
+        
+        int outputImageHeight = inputImage.getWidth() * inputImage.getHeight();
+        outputImage = new BufferedImage(255, outputImageHeight, inputImage.getType());
+        for (int c = 0; c < 256; c++){
+            for (int r = 0; r < outputImageHeight; r++){
+                if(outputImageHeight - rgbfr.get(c) < r){
+                //    int rgb = 0x000000;
+                    outputImage.setRGB(c, r, 255);
+                }
+                else{
+                    int rgb = 0x000001;
+                 //   outputImage.setRGB(c, r, rgb);
+                }
+            }
+        }
+        displayImage(outputImage, rightPane);
+    }
+
+    @FXML
+    private void getColorHistogramAction(ActionEvent event) {
+        
     }
 }
